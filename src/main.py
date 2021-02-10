@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, HumanTalent
+from models import db, HumanTalent, HRManager, Team, Company
 #from models import Person
 
 app = Flask(__name__)
@@ -29,7 +29,7 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
-
+'''
 @app.route('/user', methods=['GET'])
 def handle_hello():
 
@@ -38,6 +38,46 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+@app.route("/signup", methods=["POST"])
+def handle_signup():
+    """ creates an user and returns it. """
+    data = request.json
+    new_user = User.create(data)
+    if new_user:
+        return new_user.serialize(), 201
+
+'''
+
+@app.route('/signup', methods=['POST'])
+def handle_signup():
+    data = request.json
+    new_hrmanager = HRManager.create(data)
+    new_company = Company.create(data)
+    new_client = f"{new_hrmanager} {new_company}"
+    if new_client :
+        #return new_hrmanager.serialize(),201
+        return new_client.serialize(),201
+
+@app.route('/Team/create', methods=['POST'])
+def handle_create():
+    data = request.json
+    new_team = Team.create(data)
+    if new_team :
+        #return new_hrmanager.serialize(),201
+        return new_team.serialize(),201
+
+@app.route('/HRManager/IncludeTalent', methods=['POST'])
+def handle_IncludeTalent():
+    data = request.json
+    new_talent = HumanTalent.create(data)
+    if new_talent :
+        #return new_hrmanager.serialize(),201
+        return new_talent.serialize(),201
+
+
+
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

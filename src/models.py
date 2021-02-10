@@ -13,7 +13,6 @@ class HumanTalent(db.Model):
     user_type = db.Column(db.Boolean)
     salt=db.Column(db.String(120),unique=False,nullable=False)
     
-
     # teams=relationship("Team", backref="HumanTalent")
     # post_likes = relationship('PostLike', backref = "user")
     # comments = relationship('Comment', backref = "author")
@@ -76,50 +75,51 @@ class HRManager(db.Model):
             # "company_id":self.company_id
             }
 
-    class Team(db.Model):
-        id= db.Column(db.Integer,primary_key=true)
-        name=db.Column(db.String(120),unique=False)
-        # company=relationship("Company", backref="Team")
+class Team(db.Model):
+    id= db.Column(db.Integer,primary_key=true)
+    name=db.Column(db.String(120),unique=False)
+    description=db.Column(db.String(200),unique=False)
+    # company=relationship("Company", backref="Team")
+    
+
+    def serialize(self):
+        return{
+            "id":self.id,
+            "name":self.name,
+            # "company":self.company
+        }
+
+class Company(db.Model):
+    id= db.Column(db.Integer,primary_key=True)
+    name=db.Column(db.String(120),unique=False)
+    image=db.Column(db.String(120),unique=False)
+    country=db.Column(db.String(120),unique=False)
+    city=db.Column(db.String(120),unique=False)
+    identifier=db.Column(db.String(120),unique=False)
         
-
-        def serialize(self):
-            return{
-                "id":self.id,
-                "name":self.name,
-                # "company":self.company
-            }
-
-    class Company(db.Model):
-        id= db.Column(db.Integer,primary_key=true
-        name=db.Column(db.String(120),unique=False)
-        image=db.Column(sb.String(120),unique=False)
-        country=db.Column(sb.String(120),unique=False)
-        city=db.Column(db.String(120),unique=False)
-        identifier=db.Column(db.String(120),unique=False)
-        )
     
     def serialize(self):
-            return{
-                "id":self.id,
-                "name":self.name,
-                "image":self.image,
-                "city":self.city,
-                "country":self.country,
-                "identifier":self.identifier
-            }
+        return{
+            "id":self.id,
+            "name":self.name,
+            "image":self.image,
+            "city":self.city,
+            "country":self.country,
+            "identifier":self.identifier
+        }
     
-    class Mood(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        date_published = db.Column(db.Integer)
-        face_value = db.Column(db.Integer)
-        comment = db.Column(db.String(120), unique=False, nullable=False)
-        done=db.Column(db.Boolean)
+class Mood(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date_published = db.Column(db.Integer)
+    face_value = db.Column(db.Integer)
+    comment = db.Column(db.String(120), unique=False, nullable=False)
+    done=db.Column(db.Boolean)
 
-     def serialize(self):
+    def serialize(self):
             return{
-                "id"=self.id,
-                "date_published"=self.date_published,
-                "face_value"=self.face_value,
-                "comment"=self.comment,
-                "done"=False
+                "id" : self.id,
+                "date_published" : self.date_published,
+                "face_value" : self.face_value,
+                "comment" : self.comment,
+                "done" : False
             }
