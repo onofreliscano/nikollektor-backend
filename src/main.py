@@ -1,4 +1,6 @@
 """
+fsdfsdsdf
+JOSEFA UPDATES
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
@@ -48,6 +50,7 @@ def handle_signup():
         return new_user.serialize(), 201
 
 '''
+# ENDPOINTS creados por Josefa y Onofre
 
 @app.route('/signup', methods=['POST'])
 def handle_signup():
