@@ -5,13 +5,16 @@ from base64 import b64encode
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class HumanTalent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     hashed_password = db.Column(db.String(80), unique=False, nullable=False)
     full_name = db.Column(db.String(120), unique=False, nullable=False)
     user_type = db.Column(db.Integer)
     salt=db.Column(db.String(120),unique=False,nullable=False)
+    team=relationship("Team", backref="HumanTalent")
+
+    
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -49,8 +52,37 @@ class User(db.Model):
             "full_name":self.full_name,
             "user_type":self.user_type,
             "hashed_password":self.hashed_password,
+            "team_id":self.team_id
             }
         
+class HRManager(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    full_name = db.Column(db.String(120), unique=False, nullable=False)
+    user_type = db.Column(db.Integer)
+    salt=db.Column(db.String(120),unique=False,nullable=False)
+    company=relationship("Company", backref="HRManager")
+    hashed_password = db.Column(db.String(80), unique=False, nullable=False)
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "full_name":self.full_name,
+            "user_type":self.user_type,
+            "hashed_password":self.hashed_password,
+            "company_id":self.company_id
+            }
 
+    class Team(db.Model):
+        id= db.Column(db.Integer,primary_key=true
+        name=db.Column(db.String(120),unique=False)
+        company=relationship("Company", backref="Team")
+        )
 
+        def serialize(self):
+            return{
+                "id":self.id
+                "name":self.name
+                "company":self.company
+            }
