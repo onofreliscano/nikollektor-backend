@@ -51,14 +51,6 @@ def handle_human_talent():
             "result": "user not found"
         }), 404
 
-@app.route("/HRManager/signup", methods=["POST"])
-def handle_signup():
-    """ creates an user and returns it. """
-    data = request.json
-    new_user = HumanTalent.create(data)
-    if new_user:
-        return new_user.serialize(), 201
-
 @app.route("/login", methods=["POST"])
 def handle_login():
     """ 
@@ -86,19 +78,26 @@ def handle_login():
     #     return jsonify({"msg": "Bad username or password"}), 401, 403
     # Identity can be any data that is json serializable
 
-@app.route("/seguro")
-@jwt_required
-def handle_seguro():
-    email = get_jwt_identity() #nos va dar la identidad de token
-    return jsonify({"msg":f"Hola, {email}"})
+# @app.route("/seguro")
+# @jwt_required
+# def handle_seguro():
+#     email = get_jwt_identity() #nos va dar la identidad de token
+#     return jsonify({"msg":f"Hola, {email}"})
 
-@app.route("/human_talent/profile", methods=['POST'])
+@app.route("/human_talent/<human_talent_id>", methods=['POST'])
 def handle_mood():
     """ Envía el mood del día """
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    params = request.get_json()
+    face_value = params.get('face_value', None)
+    datetime = params.get('datetime', None)
     if not face_value:
         return jsonify({"msg": "Missing your mood parameter"}), 400
     if not date_published:
         return jsonify({"msg": "Missing date parameter"}), 400 
+    mood = Mood.
+    # falta arreglar
    
 
 # this only runs if `$ python src/main.py` is executed
