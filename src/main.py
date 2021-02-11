@@ -57,20 +57,27 @@ def handle_login():
         check password for user with email = body['email']
         and return token if match.
     """
+    #como hacer para que backend sepa que es un HRManager o un HumanTalent
+
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
     params = request.get_json()
     email = params.get('email', None)
     password = params.get('password', None)
+    # user_type = params.get('user_type', None)
     if not email:
         return jsonify({"msg": "Missing email parameter"}), 400
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
     user = HumanTalent.query.filter_by(email=email).one_or_none()
-    if not user:
+    admin = HRManager.query.filter_by(email=email).one_or_none()
+    if not user and admin:
         return jsonify({"msg": "User does not exist"}), 404
     if user.check_password(password):
         response = {'jwt': create_access_token(identity=user.email)} #aquí crea el token del login
+        return jsonify(response), 200
+    if admin.check_password(password):
+        response = {'jwt': create_access_token(identity=admin.email)} #aquí crea el token del login
         return jsonify(response), 200
     else:
         return jsonify({"msg": "Bad credentials"}), 401
@@ -84,21 +91,65 @@ def handle_login():
 #     email = get_jwt_identity() #nos va dar la identidad de token
 #     return jsonify({"msg":f"Hola, {email}"})
 
-@app.route("/human_talent/<human_talent_id>", methods=['POST'])
+@app.route("/HumanTalent", methods=["POST"])
 def handle_mood():
     """ Envía el mood del día """
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
     params = request.get_json()
     face_value = params.get('face_value', None)
-    datetime = params.get('datetime', None)
+    date = params.get('date_published', None)
+    # done = params.get('done', None)
+
     if not face_value:
         return jsonify({"msg": "Missing your mood parameter"}), 400
-    if not date_published:
+    if not date:
         return jsonify({"msg": "Missing date parameter"}), 400 
-    mood = Mood.
-    # falta arreglar
-   
+    # if not done != True:
+    #     return jsonify({"msg": "You haven't upload your mood today"}), 400 
+    
+    new_mood = Mood(face_value=face_value, date=date, done=done, comment=params['comment']) #pasamos los parametros
+    db.session.add(new_mood) # añade un mood en la base de datos, lo deja en cola
+    try:
+       db.session.commit() # intentas que se integre el cambio
+       return jsonify(new_mood.serialize()), 201
+    except Exception as error:
+        print(error.args) 
+        return jsonify("NOT OK"), 500
+
+@app.route("/HRManager/graphics")
+def handle_graphics():
+    """Devuelve los datos para generar la gráfica"""
+    #pregunatar como se pueden relacionar tres clases, Mood(da el valor), Team(se va a expresar el promedio) y HumanTalent
+
+'''
+# ENDPOINTS creados por Josefa y Onofre
+
+@app.route('/signup', methods=['POST'])
+def handle_signup():
+    data = request.json
+    new_hrmanager = HRManager.create(data)
+    new_company = Company.create(data)
+    new_client = f"{new_hrmanager} {new_company}"
+    if new_client :
+        #return new_hrmanager.serialize(),201
+        return new_client.serialize(),201
+
+@app.route('/Team/create', methods=['POST'])
+def handle_create():
+    data = request.json
+    new_team = Team.create(data)
+    if new_team :
+        #return new_hrmanager.serialize(),201
+        return new_team.serialize(),201
+
+@app.route('/HRManager/IncludeTalent', methods=['POST'])
+def handle_IncludeTalent():
+    data = request.json
+    new_talent = HumanTalent.create(data)
+    if new_talent :
+        #return new_hrmanager.serialize(),201
+        return new_talent.serialize(),201
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
