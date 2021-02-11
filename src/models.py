@@ -1,41 +1,44 @@
-from flask_sqlalchemy import SQLAlchemy
-import os 
-from werkzeug.security import generate_password_hash, check_password_hash
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# pylint: disable=no-member
+import os
+from flask_sqlalchemy import SQLAlchemy 
 from base64 import b64encode
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 db = SQLAlchemy()
 
-class HumanTalent(db.Model):
+class HumanTalent (db.Model):
+    '''clase para Human Talent'''
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     hashed_password = db.Column(db.String(80), unique=False, nullable=False)
     full_name = db.Column(db.String(120), unique=False, nullable=False)
     user_type = db.Column(db.Boolean)
-    salt=db.Column(db.String(120),unique=False,nullable=False)
-    
-    # teams=relationship("Team", backref="HumanTalent")
-    # post_likes = relationship('PostLike', backref = "user")
-    # comments = relationship('Comment', backref = "author")
-    # coment_likes = relationship('CommentLike', backref = "author")
+    salt=db.Column(db.String(120),nullable=False)
 
-    def __repr__(self):
+    Moods=db.relationship("Mood", backref="HumanTalent")
+    Team_id=db.Column(db.Integer,db.ForeignKey("Team.id"))
+
+    def __repr__ (self):
         return '<User %r>' % self.username
 
-    def __init__(self):
+    def __init__(self,data):
         self.email=data["email"],
-        self.salt=b64encode(os.urandom(4)).decode("utf-8")
+        self.salt=b64encode(os.urandom(4)).decode("utf-8"),
         self.hashed_password=self.set.password(
             data["password"]
         )
 
     @classmethod
     def create(cls,data):
-        HumanTalent=cls(data)
-        sb.session.add(HumanTalent)
+        human_talent=cls(data)
+        db.session.add(human_talent)
         db.session.commit()
-        return HumanTalent
+        return human_talent
     
-    def set_password(self):
+    def set_password(self,password):
         return generate_password_hash(
             f"{password}{self.salt}",
             self.salt
@@ -55,15 +58,36 @@ class HumanTalent(db.Model):
             "user_type":False,
             "hashed_password":self.hashed_password
             }
-        
+       
 class HRManager(db.Model):
+    '''clase para manager'''
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     full_name = db.Column(db.String(120), unique=False, nullable=False)
     user_type = db.Column(db.Boolean)
     salt=db.Column(db.String(120),unique=False,nullable=False)
-    # company=relationship("Company", backref="HRManager")
     hashed_password = db.Column(db.String(80), unique=False, nullable=False)
+    Company_id = db.Column(db.Integer, db.ForeignKey("Company.id"))
+
+    @classmethod
+    def create(cls,data):
+        h_r_manager=cls(data)
+        db.session.add(h_r_manager)
+        db.session.commit()
+        return h_r_manager
+    
+    def set_password(self,password):
+        return generate_password_hash(
+            f"{password}{self.salt}",
+            self.salt
+        )
+    
+    def check_password(self,password):
+        return check_password_hash(
+            self.hashed_password,
+            f"{password}{self.salt}"
+        )
+
 
     def serialize(self):
         return {
@@ -72,31 +96,19 @@ class HRManager(db.Model):
             "full_name":self.full_name,
             "user_type":True,
             "hashed_password":self.hashed_password
-            # "company_id":self.company_id
             }
 
-class Team(db.Model):
-    id= db.Column(db.Integer,primary_key=true)
-    name=db.Column(db.String(120),unique=False)
-    description=db.Column(db.String(200),unique=False)
-    # company=relationship("Company", backref="Team")
-    
-
-    def serialize(self):
-        return{
-            "id":self.id,
-            "name":self.name,
-            # "company":self.company
-        }
-
 class Company(db.Model):
+    '''clase para Company'''
     id= db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(120),unique=False)
     image=db.Column(db.String(120),unique=False)
     country=db.Column(db.String(120),unique=False)
     city=db.Column(db.String(120),unique=False)
     identifier=db.Column(db.String(120),unique=False)
-        
+   
+    teams=db.relationship("Team", backref="Company")
+    HRManagers=db.relationship("HRManager", backref="Company")
     
     def serialize(self):
         return{
@@ -108,18 +120,37 @@ class Company(db.Model):
             "identifier":self.identifier
         }
     
+    class Team(db.Model):
+        '''clase para Team'''
+        id= db.Column(db.Integer,primary_key= True)
+        name=db.Column(db.String(120),unique=False)
+        description=db.Column(db.String(200),unique=False)
+        
+        Company_id = db.Column(db.Integer, db.ForeignKey("Company.id"))
+        members=db.relationship("HumanTalent", backref="Team")
+    
+        def serialize(self):
+            return{
+                "id":self.id,
+                "name":self.name,
+                "description":self.description
+                }
+
 class Mood(db.Model):
+    '''clase para mood'''
     id = db.Column(db.Integer, primary_key=True)
     date_published = db.Column(db.Integer)
     face_value = db.Column(db.Integer)
     comment = db.Column(db.String(120), unique=False, nullable=False)
     done=db.Column(db.Boolean)
 
+    Human_Talent_id=db.Column(db.Integer,db.ForeignKey("HumanTalent.id"))
+
     def serialize(self):
-            return{
-                "id" : self.id,
-                "date_published" : self.date_published,
-                "face_value" : self.face_value,
-                "comment" : self.comment,
-                "done" : False
-            }
+        return{
+            "id" : self.id,
+            "date_published" : self.date_published,
+            "face_value" : self.face_value,
+            "comment" : self.comment,
+            "done" : False
+                }
