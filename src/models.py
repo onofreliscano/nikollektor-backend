@@ -115,23 +115,23 @@ class Company(db.Model):
             "identifier":self.identifier
         }
     
-    class Team(db.Model):
-        '''clase para Team'''
-        id= db.Column(db.Integer,primary_key= True)
-        name=db.Column(db.String(120),unique=False)
-        description=db.Column(db.String(200),unique=False)
-        
-        # Company_id = db.Column(db.Integer, db.ForeignKey("Company.id"))
-        company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
-        # members=db.relationship("HumanTalent", backref="Team")
-        members=db.relationship("HumanTalent", backref="team")
+class Team(db.Model):
+    '''clase para Team'''
+    id= db.Column(db.Integer,primary_key= True)
+    name=db.Column(db.String(120),unique=False)
+    description=db.Column(db.String(200),unique=False)
     
-        def serialize(self):
-            return{
-                "id":self.id,
-                "name":self.name,
-                "description":self.description
-                }
+    # Company_id = db.Column(db.Integer, db.ForeignKey("Company.id"))
+    company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
+    # members=db.relationship("HumanTalent", backref="Team")
+    members=db.relationship("HumanTalent", backref="team")
+
+    def serialize(self):
+        return{
+            "id":self.id,
+            "name":self.name,
+            "description":self.description
+            }
 
 class Mood(db.Model):
     '''clase para mood'''
@@ -139,7 +139,6 @@ class Mood(db.Model):
     date_published = db.Column(db.Integer)
     face_value = db.Column(db.Integer)
     comment = db.Column(db.String(120), unique=False, nullable=False)
-    
 
     # HumanTalent_id=db.Column(db.Integer,db.ForeignKey("HumanTalent.id"))
     human_talent_id=db.Column(db.Integer,db.ForeignKey("humantalent.id"))
