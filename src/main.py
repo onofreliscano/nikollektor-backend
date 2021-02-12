@@ -62,13 +62,10 @@ def handle_login():
     params = request.get_json()
     email = params.get('email', None)
     password = params.get('password', None)
-    user_type = params.get('user_type', None)
 
     if not email:
         return jsonify({"msg": "Missing email parameter"}), 400
     if not password:
-        return jsonify({"msg": "Missing password parameter"}), 400
-    if not user_type:
         return jsonify({"msg": "Missing password parameter"}), 400
 
     user = HumanTalent.query.filter_by(email=email).one_or_none()
@@ -76,16 +73,13 @@ def handle_login():
     if not user or admin:
         return jsonify({"msg": "User does not exist"}), 404
     if user.check_password(password):
-        response = {'jwt': create_access_token(identity=user.email)} #aquí crea el token del login
+        response = {'jwt': create_access_token(identity=user.email), 'is_manager':False} #aquí crea el token del login
         return jsonify(response), 200
     if admin.check_password(password):
-        response = {'jwt': create_access_token(identity=admin.email)} #aquí crea el token del login
+        response = {'jwt': create_access_token(identity=admin.email), 'is_manager':True} #aquí crea el token del login
         return jsonify(response), 200
     else:
         return jsonify({"msg": "Bad credentials"}), 401
-    # if username != 'test' or password != 'test':
-    #     return jsonify({"msg": "Bad username or password"}), 401, 403
-    # Identity can be any data that is json serializable
 
 @app.route("/seguro")
 @jwt_required
