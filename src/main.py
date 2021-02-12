@@ -102,7 +102,6 @@ def handle_mood():
     if not date_published:
         return jsonify({"msg": "Missing date parameter"}), 400 
    
-'''
 @app.route("/signup", methods=["POST"])
 def handle_signup():
     """ creates an user and returns it. """
@@ -110,7 +109,6 @@ def handle_signup():
     new_user = User.create(data)
     if new_user:
         return new_user.serialize(), 201
-'''
 
 # ENDPOINTS creados por Josefa y Onofre
 
