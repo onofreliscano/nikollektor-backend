@@ -124,7 +124,7 @@ def handle_graphics():
     """Devuelve los datos para generar la gráfica"""
     #pregunatar como se pueden relacionar tres clases, Mood(da el valor), Team(se va a expresar el promedio) y HumanTalent
 
-'''
+
 # ENDPOINTS creados por Josefa y Onofre
 
 @app.route('/signup', methods=['POST'])
@@ -161,7 +161,7 @@ def handle_signup():
     if new_user:
         return new_user.serialize(), 201
 
-'''
+
 # ENDPOINTS creados por Josefa y Onofre
 
 @app.route('/signup', methods=['POST'])
