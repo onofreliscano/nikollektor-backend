@@ -1,5 +1,10 @@
-from flask_sqlalchemy import SQLAlchemy
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# pylint: disable=no-member
+
+
 import os 
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from base64 import b64encode
 
@@ -31,7 +36,7 @@ class HumanTalent(db.Model):
     @classmethod
     def create(cls,data):
         HumanTalent=cls(data)
-        sb.session.add(HumanTalent)
+        db.session.add(HumanTalent)
         db.session.commit()
         return HumanTalent
     
@@ -76,7 +81,7 @@ class HRManager(db.Model):
             }
 
 class Team(db.Model):
-    id= db.Column(db.Integer,primary_key=true)
+    id= db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(120),unique=False)
     description=db.Column(db.String(200),unique=False)
     # company=relationship("Company", backref="Team")
