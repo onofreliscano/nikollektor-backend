@@ -1,4 +1,6 @@
 """
+CAMBIOS DE ENDPOINT #1
+CAMBIOS DE DEV #1
 fsdaaaaa
 JOSEFA UPDATES
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
@@ -124,7 +126,7 @@ def handle_graphics():
     """Devuelve los datos para generar la gráfica"""
     #pregunatar como se pueden relacionar tres clases, Mood(da el valor), Team(se va a expresar el promedio) y HumanTalent
 
-'''
+
 # ENDPOINTS creados por Josefa y Onofre
 
 @app.route('/signup', methods=['POST'])
@@ -161,7 +163,6 @@ def handle_signup():
     if new_user:
         return new_user.serialize(), 201
 
-'''
 # ENDPOINTS creados por Josefa y Onofre
 
 @app.route('/signup', methods=['POST'])
@@ -189,9 +190,6 @@ def handle_IncludeTalent():
     if new_talent :
         #return new_hrmanager.serialize(),201
         return new_talent.serialize(),201
-
-
-
 
 
 # this only runs if `$ python src/main.py` is executed
