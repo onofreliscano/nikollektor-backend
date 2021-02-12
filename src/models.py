@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from base64 import b64encode
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
 db = SQLAlchemy()
 
 class HumanTalent (db.Model):
@@ -115,7 +114,7 @@ class Company(db.Model):
             "identifier":self.identifier
         }
     
-    class Team(db.Model):
+class Team(db.Model):
         '''clase para Team'''
         id= db.Column(db.Integer,primary_key= True)
         name=db.Column(db.String(120),unique=False)
@@ -142,7 +141,7 @@ class Mood(db.Model):
     
 
     # HumanTalent_id=db.Column(db.Integer,db.ForeignKey("HumanTalent.id"))
-    human_talent_id=db.Column(db.Integer,db.ForeignKey("humantalent.id"))
+    human_talent_id=db.Column(db.Integer,db.ForeignKey("human_talent.id"))
 
     def serialize(self):
         return{
