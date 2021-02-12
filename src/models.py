@@ -15,10 +15,10 @@ class HumanTalent (db.Model):
     user_type = db.Column(db.Boolean)
     salt=db.Column(db.String(120),nullable=False)
 
-    Moods=db.relationship("Mood", backref="HumanTalent")
-    # moods=db.relationship("Mood", backref="human_talent")
-    Team_id=db.Column(db.Integer,db.ForeignKey("Team.id"))
-    # team_id=db.Column(db.Integer,db.ForeignKey("team.id"))
+    # Moods=db.relationship("Mood", backref="HumanTalent")
+    moods=db.relationship("Mood", backref="human_talent")
+    # Team_id=db.Column(db.Integer,db.ForeignKey("Team.id"))
+    team_id=db.Column(db.Integer,db.ForeignKey("team.id"))
 
     def __repr__ (self):
         return '<User %r>' % self.username
@@ -66,8 +66,8 @@ class HRManager(db.Model):
     user_type = db.Column(db.Boolean)
     salt=db.Column(db.String(120),unique=False,nullable=False)
     hashed_password = db.Column(db.String(80), unique=False, nullable=False)
-    Company_id = db.Column(db.Integer, db.ForeignKey("Company.id"))
-    # company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
+    # Company_id = db.Column(db.Integer, db.ForeignKey("Company.id"))
+    company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
 
     @classmethod
     def create(cls,data):
@@ -107,10 +107,10 @@ class Company(db.Model):
     city=db.Column(db.String(120),unique=False)
     identifier=db.Column(db.String(120),unique=False)
    
-    teams=db.relationship("Team", backref="Company")
-    # teams=db.relationship("Team", backref="company")
-    HRManagers=db.relationship("HRManager", backref="Company")
-    # managers=db.relationship("HRManager", backref="company")
+    # teams=db.relationship("Team", backref="Company")
+    teams=db.relationship("Team", backref="company")
+    # HRManagers=db.relationship("HRManager", backref="Company")
+    managers=db.relationship("HRManager", backref="company")
     
     def serialize(self):
         return{
@@ -128,10 +128,10 @@ class Company(db.Model):
         name=db.Column(db.String(120),unique=False)
         description=db.Column(db.String(200),unique=False)
         
-        Company_id = db.Column(db.Integer, db.ForeignKey("Company.id"))
-        # company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
-        members=db.relationship("HumanTalent", backref="Team")
-        # members=db.relationship("HumanTalent", backref="team")
+        # Company_id = db.Column(db.Integer, db.ForeignKey("Company.id"))
+        company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
+        # members=db.relationship("HumanTalent", backref="Team")
+        members=db.relationship("HumanTalent", backref="team")
     
         def serialize(self):
             return{
@@ -146,10 +146,10 @@ class Mood(db.Model):
     date_published = db.Column(db.Integer)
     face_value = db.Column(db.Integer)
     comment = db.Column(db.String(120), unique=False, nullable=False)
-    done=db.Column(db.Boolean)
+    
 
-    HumanTalent_id=db.Column(db.Integer,db.ForeignKey("HumanTalent.id"))
-    # human_talent_id=db.Column(db.Integer,db.ForeignKey("humantalent.id"))
+    # HumanTalent_id=db.Column(db.Integer,db.ForeignKey("HumanTalent.id"))
+    human_talent_id=db.Column(db.Integer,db.ForeignKey("humantalent.id"))
 
     def serialize(self):
         return{
@@ -157,5 +157,4 @@ class Mood(db.Model):
             "date_published" : self.date_published,
             "face_value" : self.face_value,
             "comment" : self.comment,
-            "done" : False
                 }

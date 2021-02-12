@@ -59,21 +59,23 @@ def handle_login():
         check password for user with email = body['email']
         and return token if match.
     """
-    #como hacer para que backend sepa que es un HRManager o un HumanTalent
-
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
     params = request.get_json()
     email = params.get('email', None)
     password = params.get('password', None)
-    # user_type = params.get('user_type', None)
+    user_type = params.get('user_type', None)
+
     if not email:
         return jsonify({"msg": "Missing email parameter"}), 400
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
+    if not user_type:
+        return jsonify({"msg": "Missing password parameter"}), 400
+
     user = HumanTalent.query.filter_by(email=email).one_or_none()
     admin = HRManager.query.filter_by(email=email).one_or_none()
-    if not user and admin:
+    if not user or admin:
         return jsonify({"msg": "User does not exist"}), 404
     if user.check_password(password):
         response = {'jwt': create_access_token(identity=user.email)} #aquí crea el token del login
@@ -87,11 +89,11 @@ def handle_login():
     #     return jsonify({"msg": "Bad username or password"}), 401, 403
     # Identity can be any data that is json serializable
 
-# @app.route("/seguro")
-# @jwt_required
-# def handle_seguro():
-#     email = get_jwt_identity() #nos va dar la identidad de token
-#     return jsonify({"msg":f"Hola, {email}"})
+@app.route("/seguro")
+@jwt_required
+def handle_seguro():
+    email = get_jwt_identity() #nos va dar la identidad de token
+    return jsonify({"msg":f"Hola, {email}"})
 
 @app.route("/HumanTalent", methods=["POST"])
 def handle_mood():
@@ -101,14 +103,11 @@ def handle_mood():
     params = request.get_json()
     face_value = params.get('face_value', None)
     date = params.get('date_published', None)
-    # done = params.get('done', None)
 
     if not face_value:
         return jsonify({"msg": "Missing your mood parameter"}), 400
     if not date:
         return jsonify({"msg": "Missing date parameter"}), 400 
-    # if not done != True:
-    #     return jsonify({"msg": "You haven't upload your mood today"}), 400 
     
     new_mood = Mood(face_value=face_value, date=date, done=done, comment=params['comment']) #pasamos los parametros
     db.session.add(new_mood) # añade un mood en la base de datos, lo deja en cola
@@ -123,8 +122,8 @@ def handle_mood():
 def handle_graphics():
     """Devuelve los datos para generar la gráfica"""
     #pregunatar como se pueden relacionar tres clases, Mood(da el valor), Team(se va a expresar el promedio) y HumanTalent
-
-
+    pass
+'''
 # ENDPOINTS creados por Josefa y Onofre
 
 @app.route('/signup', methods=['POST'])
