@@ -127,7 +127,7 @@ def handle_signup():
     else: 
         data = request.json
 
-    new_hrmanager = HRManager(email=data['email'], full_name=data['full_name'], salt=data['salt'], hashed_password=data['hashed_password') #pasamos los parametros
+    new_hrmanager = HRManager(email=data['email'], full_name=data['full_name'], salt=data['salt'], hashed_password=data['hashed_password']) #pasamos los parametros
     db.session.add(new_hrmanager) # añade un hrmanager en la base de datos, lo deja en cola
 
     try:
@@ -137,7 +137,7 @@ def handle_signup():
         print(error.args) 
         return jsonify("NOT OK"), 500
 
-    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city==data['city'], identifier==data['identifier']) #pasamos los parametros
+    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=data['city'], identifier=data['identifier']) #pasamos los parametros
     db.session.add(new_company) # añade una company en la base de datos, lo deja en cola
     
     try:
