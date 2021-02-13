@@ -116,15 +116,38 @@ def handle_graphics():
     #pregunatar como se pueden relacionar tres clases, Mood(da el valor), Team(se va a expresar el promedio) y HumanTalent
     pass
 
+
+
+
 @app.route('/signup', methods=['POST'])
 def handle_signup():
-    data = request.json
-    new_hrmanager = HRManager.create(data)
-    new_company = Company.create(data)
-    new_client = f"{new_hrmanager} {new_company}"
-    if new_client :
-        #return new_hrmanager.serialize(),201
-        return new_client.serialize(),201
+
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    else: 
+        data = request.json
+
+    new_hrmanager = HRManager(email=data['email'], full_name=data['full_name'], salt=data['salt'], hashed_password=data['hashed_password') #pasamos los parametros
+    db.session.add(new_hrmanager) # añade un hrmanager en la base de datos, lo deja en cola
+
+    try:
+       db.session.commit() # intentas que se integre el cambio
+       return jsonify(new_hrmanager.serialize()), 201
+    except Exception as error:
+        print(error.args) 
+        return jsonify("NOT OK"), 500
+
+    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city==data['city'], identifier==data['identifier']) #pasamos los parametros
+    db.session.add(new_company) # añade una company en la base de datos, lo deja en cola
+    
+    try:
+       db.session.commit() # intentas que se integre el cambio
+       return jsonify(new_company.serialize()), 201
+    except Exception as error:
+        print(error.args) 
+        return jsonify("NOT OK"), 500
+
+
 
 @app.route('/Team/create', methods=['POST'])
 def handle_create():
