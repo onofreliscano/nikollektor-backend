@@ -134,7 +134,11 @@ def handle_signup():
         print(error.args) 
         return jsonify("NOT OK"), 500
 
+<<<<<<< HEAD
     new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=data['city'], identifier==data['identifier']) #pasamos los parametros
+=======
+    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=data['city'], identifier=data['identifier']) #pasamos los parametros
+>>>>>>> 8b070e1572ddfbeb9262c736a3336e3f4002de5d
     db.session.add(new_company) # añade una company en la base de datos, lo deja en cola
     
     try:
