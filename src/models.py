@@ -9,7 +9,7 @@ class HumanTalent (db.Model):
     '''clase para Human Talent'''
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    hashed_password = db.Column(db.String(80), unique=False, nullable=False)
+    hashed_password = db.Column(db.String(120), unique=False, nullable=False)
     full_name = db.Column(db.String(120), unique=False, nullable=False)
     salt=db.Column(db.String(120),nullable=False)
     moods=db.relationship("Mood", backref="human_talent")
@@ -52,21 +52,23 @@ class HRManager(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     full_name = db.Column(db.String(120), nullable=False)
-    hashed_password = db.Column(db.String(80), unique=True, nullable=False)
+    hashed_password = db.Column(db.String(120), unique=True, nullable=False)
     salt=db.Column(db.String(120),unique=True)
     company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
 
-    def __init__(self, email, full_name, password):
-        self.email=email,
-        self.full_name=full_name,
-        self.hashed_password=self.set_password(password)
-        self.salt=b64encode(os.urandom(4)).decode("utf-8"),
+    def __init__(self, email, full_name, password, company_id):
+        self.email=email
+        self.full_name=full_name
+        self.salt=b64encode(os.urandom(4)).decode("utf-8")
+        self.set_password(password)
+        self.company_id=company_id
 
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
-            "full_name":self.full_name
+            "full_name":self.full_name,
+            "company_id":self.company_id
         }
 
     @classmethod
@@ -83,10 +85,6 @@ class HRManager(db.Model):
     
     def set_password(self,password):
         self.hashed_password = generate_password_hash(f"{password}{self.salt}")
-        # return generate_password_hash(
-        #     f"{password}{self.salt}",
-        #     self.salt
-        # )
     
     def check_password(self,password):
         return check_password_hash(
@@ -105,7 +103,7 @@ class Company(db.Model):
     city=db.Column(db.String(120),unique=False)
     identifier=db.Column(db.String(120),unique=False)
     teams=db.relationship("Team", backref="company")
-    managers=db.relationship("HRManager", backref="company")
+    # managers=db.relationship("HRManager", backref="company")
 
     def __init__(self, name, image, country, city, identifier):
         self.name=name,
