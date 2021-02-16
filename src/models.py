@@ -94,6 +94,8 @@ class HRManager(db.Model):
             f"{password}{self.salt}"
         )
 
+#INICIO CLASE COMPANY
+
 class Company(db.Model):
     '''clase para Company'''
     id= db.Column(db.Integer,primary_key=True)
@@ -134,7 +136,11 @@ class Company(db.Model):
         db.session.add(company)
         db.session.commit()
         return company
-    
+
+#FIN CLASE COMPANY
+
+
+
 class Team(db.Model):
     '''clase para Team'''
     id= db.Column(db.Integer,primary_key= True)

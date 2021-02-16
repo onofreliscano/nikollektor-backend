@@ -31,6 +31,11 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+
+# AL 16 de FEB
+# MODIFICACION PARA CLASE COMPANY
+# INCLUSION DE ENDPOINTS:
+
 @app.route('/signup_company', methods=['POST'])
 def handle_signup_company():
     
@@ -50,6 +55,22 @@ def handle_signup_company():
     new_company = Company.create_c(name=data['name'], image=data['image'], country=data['country'], city=['city'], identifier=data['identifier'])
     if new_company:
         return new_company.serialize(),201
+
+@app.route('/company', methods=['GET'])
+@jwt_required
+def handle_all_company():
+   
+    user_email = get_jwt_identity()
+    hr_manager = HRManager.query.filter_by(email=user_email).one_or_none()
+
+    if hr_manager is None:
+        return 403
+        
+    return jsonify(hr_manager.company.serialize()), 200
+
+# FIN DE ENDPOINTS CLASE COMPANY
+
+
 
 
 @app.route('/signup_manager', methods=['POST'])
