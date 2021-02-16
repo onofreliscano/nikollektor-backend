@@ -52,7 +52,8 @@ def handle_signup_company():
     if 'identifier' not in data:
         raise APIException('You need to specify the phone', status_code=400)
     
-    new_company = Company.create_c(name=data['name'], image=data['image'], country=data['country'], city=['city'], identifier=data['identifier'])
+    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=['city'], identifier=data['identifier'])
+    db.session.add(new_company)
     if new_company:
         return new_company.serialize(),201
 
@@ -183,11 +184,11 @@ def handle_human_talent(id):
 
 #este endpoint funciona
 
-@app.route("/identity")
-@jwt_required
-def handle_seguro():
-    email = get_jwt_identity() #nos va dar la identidad de token
-    return jsonify({"msg":f"Hola, {email}"})
+# @app.route("/identity")
+# @jwt_required
+# def handle_seguro():
+#     email = get_jwt_identity() #nos va dar la identidad de token
+#     return jsonify({"msg":f"Hola, {email}"})
 
 @app.route("/HumanTalent", methods=["POST"]) #hacer GET
 def handle_mood():
