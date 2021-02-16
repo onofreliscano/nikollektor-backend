@@ -54,10 +54,29 @@ def handle_signup_company():
 
 @app.route('/signup_manager', methods=['POST'])
 def handle_signup_manager():
-    data = request.json   
-    new_hrmanager = HRManager.create(email=data['email'], full_name=data['full_name'], password=data['password'])
+
+    data = request.get_json()
+
+    if data is None:
+        raise APIException("You need to specify the request body as a json object", status_code=400)
+    if 'email' not in data:
+        raise APIException('You need to specify the email', status_code=400)
+    if 'full_name' not in data:
+        raise APIException('You need to specify the full_name', status_code=400)
+    if "password" not in data:
+        raise APIException('You need to specify the password', status_code=400)
+
+    new_hrmanager = HRManager(email=data['email'], full_name=data['full_name'], password=data["password"], company_id=data['company_id'])
+    db.session.add(new_hrmanager)
+    db.session.commit()
     if new_hrmanager:
         return new_hrmanager.serialize(),201
+
+# def handle_signup_manager():
+#     data = request.json   
+#     new_hrmanager = HRManager.create(email=data['email'], full_name=data['full_name'], password=data['password'])
+#     if new_hrmanager:
+#         return new_hrmanager.serialize(),201
 
 @app.route("/login", methods=["POST"])
 def handle_login():
@@ -170,12 +189,6 @@ def handle_mood():
     except Exception as error:
         print(error.args) 
         return jsonify("NOT OK"), 500
-
-@app.route("/HRManager/graphics")
-def handle_graphics():
-    """Devuelve los datos para generar la gráfica"""
-    #pregunatar como se pueden relacionar tres clases, Mood(da el valor), Team(se va a expresar el promedio) y HumanTalent
-    pass
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
