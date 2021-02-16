@@ -52,7 +52,9 @@ def handle_signup_company():
     if 'identifier' not in data:
         raise APIException('You need to specify the phone', status_code=400)
     
-    new_company = Company.create_c(name=data['name'], image=data['image'], country=data['country'], city=['city'], identifier=data['identifier'])
+    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=data['city'], identifier=data['identifier'])
+    db.session.add(new_company)
+    db.session.commit()
     if new_company:
         return new_company.serialize(),201
 
@@ -69,9 +71,6 @@ def handle_all_company():
     return jsonify(hr_manager.company.serialize()), 200
 
 # FIN DE ENDPOINTS CLASE COMPANY
-
-
-
 
 @app.route('/signup_manager', methods=['POST'])
 def handle_signup_manager():
@@ -92,12 +91,6 @@ def handle_signup_manager():
     db.session.commit()
     if new_hrmanager:
         return new_hrmanager.serialize(),201
-
-# def handle_signup_manager():
-#     data = request.json   
-#     new_hrmanager = HRManager.create(email=data['email'], full_name=data['full_name'], password=data['password'])
-#     if new_hrmanager:
-#         return new_hrmanager.serialize(),201
 
 @app.route("/login", methods=["POST"])
 def handle_login():
@@ -183,11 +176,11 @@ def handle_human_talent(id):
 
 #este endpoint funciona
 
-@app.route("/identity")
-@jwt_required
-def handle_seguro():
-    email = get_jwt_identity() #nos va dar la identidad de token
-    return jsonify({"msg":f"Hola, {email}"})
+# @app.route("/identity")
+# @jwt_required
+# def handle_seguro():
+#     email = get_jwt_identity() #nos va dar la identidad de token
+#     return jsonify({"msg":f"Hola, {email}"})
 
 @app.route("/HumanTalent", methods=["POST"]) #hacer GET
 def handle_mood():

@@ -70,18 +70,6 @@ class HRManager(db.Model):
             "full_name":self.full_name,
             "company_id":self.company_id
         }
-
-    @classmethod
-    def create(cls, email, full_name, password):
-        _full_name = full_name.lower()
-        h_r_manager=cls(
-            email,
-            _full_name,
-            password
-        )
-        db.session.add(h_r_manager)
-        db.session.commit()
-        return h_r_manager
     
     def set_password(self,password):
         self.hashed_password = generate_password_hash(f"{password}{self.salt}")
@@ -103,13 +91,13 @@ class Company(db.Model):
     city=db.Column(db.String(120),unique=False)
     identifier=db.Column(db.String(120),unique=False)
     teams=db.relationship("Team", backref="company")
-    # managers=db.relationship("HRManager", backref="company")
+    managers=db.relationship("HRManager", backref="company")
 
     def __init__(self, name, image, country, city, identifier):
-        self.name=name,
-        self.image=image,
-        self.country=country,
-        self.city=city,
+        self.name=name
+        self.image=image
+        self.country=country
+        self.city=city
         self.identifier=identifier
     
     def serialize(self):
@@ -122,22 +110,7 @@ class Company(db.Model):
             "identifier":self.identifier
         }
 
-    @classmethod
-    def create_c(cls, name, image, country, city, identifier):
-        company=cls(
-            name,
-            image,
-            country.lower(),
-            city.lower(),
-            identifier
-        )
-        db.session.add(company)
-        db.session.commit()
-        return company
-
 #FIN CLASE COMPANY
-
-
 
 class Team(db.Model):
     '''clase para Team'''
