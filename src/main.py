@@ -138,8 +138,10 @@ def handle_all_team():
 
 @app.route('/HRManager/team_create', methods=['POST'])
 def handle_create():
-    data = request.json
-    new_team = Team.create(data)
+    data = request.get_json()
+    new_team = Team(name=data["name"],description=data["description"],company_id=data["company_id"])
+    db.session.add(new_team)
+    db.session.commit()
     if new_team :
         return new_team.serialize(),201
 
@@ -147,9 +149,10 @@ def handle_create():
 def handle_new_talent():
     """Registra un HumanTalent"""
     data = request.get_json()
-    new_talent = HumanTalent.create_ht(data)
+    new_talent = HumanTalent(email=data["email"],password=data["password"],full_name=data["full_name"],team_id=data["team_id"])
+    db.session.add(new_talent)
+    db.session.commit()
     if new_talent :
-        #return new_hrmanager.serialize(),201
         return new_talent.serialize(),201
 
 @app.route('/HRManager/human_talent')
@@ -175,6 +178,12 @@ def handle_human_talent(id):
         }), 404
 
 #este endpoint funciona
+@app.route('/HRManager/human_talent/<int:id>', methods=['DELETE'])
+def delete_human_talent(id): 
+    """ elimina un talento humano por su ID"""
+    db.session.delete(HumanTalent.query.get(id) )
+    db.session.commit() 
+    return '', 204
 
 # @app.route("/identity")
 # @jwt_required
