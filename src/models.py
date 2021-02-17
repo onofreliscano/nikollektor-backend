@@ -18,7 +18,7 @@ class HumanTalent (db.Model):
     def __init__(self, data):
         self.email = data['email']
         self.salt = b64encode(os.urandom(4)).decode("utf-8")
-        self.hashed_password = self.set_password(data["hashed_password"])
+        self.set_password(data["password"])
         self.full_name = data['full_name']
     
     @classmethod
