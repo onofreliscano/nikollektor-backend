@@ -6,22 +6,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 
 class HumanTalent (db.Model):
-    '''clase para Human Talent'''
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    salt=db.Column(db.String(120),nullable=False)
     hashed_password = db.Column(db.String(120), unique=False, nullable=False)
     full_name = db.Column(db.String(120), unique=False, nullable=False)
-    salt=db.Column(db.String(120),nullable=False)
     moods=db.relationship("Mood", backref="human_talent")
     team_id=db.Column(db.Integer,db.ForeignKey("team.id"))
-
-    def __init__(self,email,password,full_name,team_id):
-        self.email = email
-        self.salt = b64encode(os.urandom(4)).decode("utf-8")
-        self.set_password(password)
-        self.full_name = full_name
-        self.team_id=team_id
-    
 
     def set_password(self,password):
         self.hashed_password = generate_password_hash(f"{password}{self.salt}")
@@ -32,23 +23,37 @@ class HumanTalent (db.Model):
             f"{password}{self.salt}"
         )
 
+    def __init__(self, email, password, full_name, team_id):
+        self.email = email
+        self.salt = b64encode(os.urandom(4)).decode("utf-8")
+        self.set_password(password)
+        self.full_name = full_name
+        self.team_id= team_id
+
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
             "full_name":self.full_name,
-            # "moods":self.moods,
-            "team_name":self.team_name
+            "team_id":self.team_id
         }
        
 class HRManager(db.Model):
-    '''clase para manager'''
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     full_name = db.Column(db.String(120), nullable=False)
-    hashed_password = db.Column(db.String(120), unique=True, nullable=False)
     salt=db.Column(db.String(120),unique=True)
+    hashed_password = db.Column(db.String(120), unique=True, nullable=False)
     company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
+    
+    def set_password(self,password):
+        self.hashed_password = generate_password_hash(f"{password}{self.salt}")
+    
+    def check_password(self,password):
+        return check_password_hash(
+            self.hashed_password,
+            f"{password}{self.salt}"
+        )
 
     def __init__(self, email, full_name, password, company_id):
         self.email=email
@@ -64,20 +69,8 @@ class HRManager(db.Model):
             "full_name":self.full_name,
             "company_id":self.company_id
         }
-    
-    def set_password(self,password):
-        self.hashed_password = generate_password_hash(f"{password}{self.salt}")
-    
-    def check_password(self,password):
-        return check_password_hash(
-            self.hashed_password,
-            f"{password}{self.salt}"
-        )
-
-#INICIO CLASE COMPANY
 
 class Company(db.Model):
-    '''clase para Company'''
     id= db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(120),unique=False)
     image=db.Column(db.String(120), nullable=True)
@@ -104,10 +97,7 @@ class Company(db.Model):
             "identifier":self.identifier
         }
 
-#FIN CLASE COMPANY
-
 class Team(db.Model):
-    '''clase para Team'''
     id= db.Column(db.Integer,primary_key= True)
     name=db.Column(db.String(120),unique=False)
     description=db.Column(db.String(200),unique=False)
@@ -128,7 +118,6 @@ class Team(db.Model):
         }
 
 class Mood(db.Model):
-    '''clase para mood'''
     id = db.Column(db.Integer, primary_key=True)
     date_published = db.Column(db.Integer)
     face_value = db.Column(db.Integer)
