@@ -133,6 +133,13 @@ def handle_all_team():
         response_body.append(team.serialize())
     return jsonify(response_body), 200
 
+@app.route('/HRManager/team/<int:id>', methods=['DELETE'])
+def delete_team(id): 
+    """ elimina un team por su ID"""
+    db.session.delete(Team.query.get(id) )
+    db.session.commit() 
+    return '', 204
+
 @app.route('/HRManager/team_create', methods=['POST'])
 def handle_create():
     """Crea Team, necesario para crear el human talent"""
