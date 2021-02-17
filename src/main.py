@@ -1,6 +1,3 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
 import os
 from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
@@ -10,7 +7,7 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, HRManager, HumanTalent, Mood, Company, Team
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-#from models import Person
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['JWT_SECRET_KEY'] = 'mariposas'
@@ -21,16 +18,16 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
+
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
-# generate sitemap with all your endpoints
 
+# generate sitemap with all your endpoints
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
-
 
 # AL 16 de FEB
 # MODIFICACION PARA CLASE COMPANY
@@ -38,6 +35,7 @@ def sitemap():
 
 @app.route('/signup_company', methods=['POST'])
 def handle_signup_company():
+    """ Registra una compañía, desde la que se podrá crear al HR manager"""
     
     data = request.get_json()
 
@@ -52,8 +50,9 @@ def handle_signup_company():
     if 'identifier' not in data:
         raise APIException('You need to specify the phone', status_code=400)
     
-    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=['city'], identifier=data['identifier'])
+    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=data['city'], identifier=data['identifier'])
     db.session.add(new_company)
+    db.session.commit()
     if new_company:
         return new_company.serialize(),201
 
@@ -71,11 +70,9 @@ def handle_all_company():
 
 # FIN DE ENDPOINTS CLASE COMPANY
 
-
-
-
 @app.route('/signup_manager', methods=['POST'])
 def handle_signup_manager():
+    """registra un HR manager"""
 
     data = request.get_json()
 
@@ -94,18 +91,10 @@ def handle_signup_manager():
     if new_hrmanager:
         return new_hrmanager.serialize(),201
 
-# def handle_signup_manager():
-#     data = request.json   
-#     new_hrmanager = HRManager.create(email=data['email'], full_name=data['full_name'], password=data['password'])
-#     if new_hrmanager:
-#         return new_hrmanager.serialize(),201
-
 @app.route("/login", methods=["POST"])
 def handle_login():
-    """ 
-        check password for user with email = body['email']
-        and return token if match.
-    """
+    """ verifica el password de human talent o HR manager con email = data['email'] y genera un token si lo consigue"""
+    
     data = request.get_json()
 
     if not data:
@@ -122,14 +111,16 @@ def handle_login():
     user = HumanTalent.query.filter_by(email=email).one_or_none()
     admin = HRManager.query.filter_by(email=email).one_or_none()
     
+    if user:
+        if user.check_password(password):
+            response = {'jwt': create_access_token(identity=user.email), 'is_manager':False} #aquí crea el token del login
+            return jsonify(response), 200
+    if admin:
+        if admin.check_password(password):
+            response = {'jwt': create_access_token(identity=admin.email), 'is_manager':True} #aquí crea el token del login
+            return jsonify(response), 200
     if not user or admin:
         return jsonify({"msg": "User does not exist"}), 404
-    if user.check_password(password):
-        response = {'jwt': create_access_token(identity=user.email), 'is_manager':False} #aquí crea el token del login
-        return jsonify(response), 200
-    if admin.check_password(password):
-        response = {'jwt': create_access_token(identity=admin.email), 'is_manager':True} #aquí crea el token del login
-        return jsonify(response), 200
     else:
         return jsonify({"msg": "Bad credentials"}), 401
 
@@ -142,12 +133,20 @@ def handle_all_team():
         response_body.append(team.serialize())
     return jsonify(response_body), 200
 
-#este endpoint funciona
+@app.route('/HRManager/team/<int:id>', methods=['DELETE'])
+def delete_team(id): 
+    """ elimina un team por su ID"""
+    db.session.delete(Team.query.get(id) )
+    db.session.commit() 
+    return '', 204
 
 @app.route('/HRManager/team_create', methods=['POST'])
 def handle_create():
-    data = request.json
-    new_team = Team.create(data)
+    """Crea Team, necesario para crear el human talent"""
+    data = request.get_json()
+    new_team = Team(name=data["name"],description=data["description"],company_id=data["company_id"])
+    db.session.add(new_team)
+    db.session.commit()
     if new_team :
         return new_team.serialize(),201
 
@@ -155,9 +154,10 @@ def handle_create():
 def handle_new_talent():
     """Registra un HumanTalent"""
     data = request.get_json()
-    new_talent = HumanTalent.create_ht(data)
-    if new_talent :
-        #return new_hrmanager.serialize(),201
+    new_talent = HumanTalent(email=data["email"], password=data["password"], full_name=data["full_name"], team_id=data["team_id"])
+    db.session.add(new_talent)
+    db.session.commit()
+    if new_talent:
         return new_talent.serialize(),201
 
 @app.route('/HRManager/human_talent')
@@ -168,8 +168,6 @@ def handle_all_human_talent():
     for human in humans_talent:
         response_body.append(human.serialize())
     return jsonify(response_body), 200
-
-#este endpoint funciona
 
 @app.route("/HRManager/human_talent/<int:id>")
 def handle_human_talent(id):
@@ -182,7 +180,12 @@ def handle_human_talent(id):
             "result": "user not found"
         }), 404
 
-#este endpoint funciona
+@app.route('/HRManager/human_talent/<int:id>', methods=['DELETE'])
+def delete_human_talent(id): 
+    """ elimina un talento humano por su ID"""
+    db.session.delete(HumanTalent.query.get(id) )
+    db.session.commit() 
+    return '', 204
 
 # @app.route("/identity")
 # @jwt_required
@@ -190,7 +193,7 @@ def handle_human_talent(id):
 #     email = get_jwt_identity() #nos va dar la identidad de token
 #     return jsonify({"msg":f"Hola, {email}"})
 
-@app.route("/HumanTalent", methods=["POST"]) #hacer GET
+@app.route("/HumanTalent", methods=["POST"]) #hacer GET y arreglar
 def handle_mood():
     """ Envía el mood del día """
     data = request.get_json()
