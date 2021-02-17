@@ -15,18 +15,13 @@ class HumanTalent (db.Model):
     moods=db.relationship("Mood", backref="human_talent")
     team_id=db.Column(db.Integer,db.ForeignKey("team.id"))
 
-    def __init__(self, data):
-        self.email = data['email']
+    def __init__(self,email,password,full_name,team_id):
+        self.email = email
         self.salt = b64encode(os.urandom(4)).decode("utf-8")
-        self.hashed_password = self.set_password(data["hashed_password"])
-        self.full_name = data['full_name']
+        self.set_password(password)
+        self.full_name = full_name
+        self.team_id=team_id
     
-    @classmethod
-    def create_ht(cls, data):
-        human_talent=cls(data)
-        db.session.add(human_talent)
-        db.session.commit()
-        return human_talent
 
     def set_password(self,password):
         self.hashed_password = generate_password_hash(f"{password}{self.salt}")
@@ -43,8 +38,7 @@ class HumanTalent (db.Model):
             "email": self.email,
             "full_name":self.full_name,
             # "moods":self.moods,
-            "hashed_password":self.hashed_password
-            # "team_name":self.team_name
+            "team_name":self.team_name
         }
        
 class HRManager(db.Model):
@@ -70,18 +64,6 @@ class HRManager(db.Model):
             "full_name":self.full_name,
             "company_id":self.company_id
         }
-
-    @classmethod
-    def create(cls, email, full_name, password):
-        _full_name = full_name.lower()
-        h_r_manager=cls(
-            email,
-            _full_name,
-            password
-        )
-        db.session.add(h_r_manager)
-        db.session.commit()
-        return h_r_manager
     
     def set_password(self,password):
         self.hashed_password = generate_password_hash(f"{password}{self.salt}")
@@ -103,13 +85,13 @@ class Company(db.Model):
     city=db.Column(db.String(120),unique=False)
     identifier=db.Column(db.String(120),unique=False)
     teams=db.relationship("Team", backref="company")
-    # managers=db.relationship("HRManager", backref="company")
+    managers=db.relationship("HRManager", backref="company")
 
     def __init__(self, name, image, country, city, identifier):
-        self.name=name,
-        self.image=image,
-        self.country=country,
-        self.city=city,
+        self.name=name
+        self.image=image
+        self.country=country
+        self.city=city
         self.identifier=identifier
     
     def serialize(self):
@@ -122,22 +104,7 @@ class Company(db.Model):
             "identifier":self.identifier
         }
 
-    @classmethod
-    def create_c(cls, name, image, country, city, identifier):
-        company=cls(
-            name,
-            image,
-            country.lower(),
-            city.lower(),
-            identifier
-        )
-        db.session.add(company)
-        db.session.commit()
-        return company
-
 #FIN CLASE COMPANY
-
-
 
 class Team(db.Model):
     '''clase para Team'''
@@ -147,11 +114,17 @@ class Team(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
     members=db.relationship("HumanTalent", backref="team")
 
+    def __init__(self,name,description,company_id):
+        self.name=name
+        self.description=description
+        self.company_id=company_id
+
     def serialize(self):
         return{
             "id":self.id,
             "name":self.name,
-            "description":self.description
+            "description":self.description,
+            "company_id":self.company_id
         }
 
 class Mood(db.Model):
