@@ -9,7 +9,7 @@ class HumanTalent (db.Model):
     '''clase para Human Talent'''
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    hashed_password = db.Column(db.String(80), unique=False, nullable=False)
+    hashed_password = db.Column(db.String(120), unique=False, nullable=False)
     full_name = db.Column(db.String(120), unique=False, nullable=False)
     salt=db.Column(db.String(120),nullable=False)
     moods=db.relationship("Mood", backref="human_talent")
@@ -52,47 +52,35 @@ class HRManager(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     full_name = db.Column(db.String(120), nullable=False)
-    hashed_password = db.Column(db.String(80), unique=True, nullable=False)
+    hashed_password = db.Column(db.String(120), unique=True, nullable=False)
     salt=db.Column(db.String(120),unique=True)
     company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
 
-    def __init__(self, email, full_name, password):
-        self.email=email,
-        self.full_name=full_name,
-        self.hashed_password=self.set_password(password)
-        self.salt=b64encode(os.urandom(4)).decode("utf-8"),
+    def __init__(self, email, full_name, password, company_id):
+        self.email=email
+        self.full_name=full_name
+        self.salt=b64encode(os.urandom(4)).decode("utf-8")
+        self.set_password(password)
+        self.company_id=company_id
 
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
-            "full_name":self.full_name
+            "full_name":self.full_name,
+            "company_id":self.company_id
         }
-
-    @classmethod
-    def create(cls, email, full_name, password):
-        _full_name = full_name.lower()
-        h_r_manager=cls(
-            email,
-            _full_name,
-            password
-        )
-        db.session.add(h_r_manager)
-        db.session.commit()
-        return h_r_manager
     
     def set_password(self,password):
         self.hashed_password = generate_password_hash(f"{password}{self.salt}")
-        # return generate_password_hash(
-        #     f"{password}{self.salt}",
-        #     self.salt
-        # )
     
     def check_password(self,password):
         return check_password_hash(
             self.hashed_password,
             f"{password}{self.salt}"
         )
+
+#INICIO CLASE COMPANY
 
 class Company(db.Model):
     '''clase para Company'''
@@ -106,10 +94,10 @@ class Company(db.Model):
     managers=db.relationship("HRManager", backref="company")
 
     def __init__(self, name, image, country, city, identifier):
-        self.name=name,
-        self.image=image,
-        self.country=country,
-        self.city=city,
+        self.name=name
+        self.image=image
+        self.country=country
+        self.city=city
         self.identifier=identifier
     
     def serialize(self):
@@ -122,19 +110,8 @@ class Company(db.Model):
             "identifier":self.identifier
         }
 
-    @classmethod
-    def create_c(cls, name, image, country, city, identifier):
-        company=cls(
-            name,
-            image,
-            country.lower(),
-            city.lower(),
-            identifier
-        )
-        db.session.add(company)
-        db.session.commit()
-        return company
-    
+#FIN CLASE COMPANY
+
 class Team(db.Model):
     '''clase para Team'''
     id= db.Column(db.Integer,primary_key= True)

@@ -31,6 +31,11 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+
+# AL 16 de FEB
+# MODIFICACION PARA CLASE COMPANY
+# INCLUSION DE ENDPOINTS:
+
 @app.route('/signup_company', methods=['POST'])
 def handle_signup_company():
     
@@ -47,15 +52,43 @@ def handle_signup_company():
     if 'identifier' not in data:
         raise APIException('You need to specify the phone', status_code=400)
     
-    new_company = Company.create_c(name=data['name'], image=data['image'], country=data['country'], city=['city'], identifier=data['identifier'])
+    new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=data['city'], identifier=data['identifier'])
+    db.session.add(new_company)
+    db.session.commit()
     if new_company:
         return new_company.serialize(),201
 
+@app.route('/company', methods=['GET'])
+@jwt_required
+def handle_all_company():
+   
+    user_email = get_jwt_identity()
+    hr_manager = HRManager.query.filter_by(email=user_email).one_or_none()
+
+    if hr_manager is None:
+        return 403
+        
+    return jsonify(hr_manager.company.serialize()), 200
+
+# FIN DE ENDPOINTS CLASE COMPANY
 
 @app.route('/signup_manager', methods=['POST'])
 def handle_signup_manager():
-    data = request.json   
-    new_hrmanager = HRManager.create(email=data['email'], full_name=data['full_name'], password=data['password'])
+
+    data = request.get_json()
+
+    if data is None:
+        raise APIException("You need to specify the request body as a json object", status_code=400)
+    if 'email' not in data:
+        raise APIException('You need to specify the email', status_code=400)
+    if 'full_name' not in data:
+        raise APIException('You need to specify the full_name', status_code=400)
+    if "password" not in data:
+        raise APIException('You need to specify the password', status_code=400)
+
+    new_hrmanager = HRManager(email=data['email'], full_name=data['full_name'], password=data["password"], company_id=data['company_id'])
+    db.session.add(new_hrmanager)
+    db.session.commit()
     if new_hrmanager:
         return new_hrmanager.serialize(),201
 
@@ -143,11 +176,11 @@ def handle_human_talent(id):
 
 #este endpoint funciona
 
-@app.route("/identity")
-@jwt_required
-def handle_seguro():
-    email = get_jwt_identity() #nos va dar la identidad de token
-    return jsonify({"msg":f"Hola, {email}"})
+# @app.route("/identity")
+# @jwt_required
+# def handle_seguro():
+#     email = get_jwt_identity() #nos va dar la identidad de token
+#     return jsonify({"msg":f"Hola, {email}"})
 
 @app.route("/HumanTalent", methods=["POST"]) #hacer GET
 def handle_mood():
@@ -170,12 +203,6 @@ def handle_mood():
     except Exception as error:
         print(error.args) 
         return jsonify("NOT OK"), 500
-
-@app.route("/HRManager/graphics")
-def handle_graphics():
-    """Devuelve los datos para generar la gráfica"""
-    #pregunatar como se pueden relacionar tres clases, Mood(da el valor), Team(se va a expresar el promedio) y HumanTalent
-    pass
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
