@@ -57,7 +57,7 @@ def handle_signup_company():
         return new_company.serialize(),201
 
 @app.route('/company', methods=['GET'])
-@jwt_required
+@jwt_required()
 def handle_all_company():
    
     user_email = get_jwt_identity()
