@@ -1,4 +1,5 @@
 import os 
+import datetime
 from flask_sqlalchemy import SQLAlchemy
 from base64 import b64encode
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,6 +12,7 @@ class HumanTalent (db.Model):
     salt=db.Column(db.String(120),nullable=False)
     hashed_password = db.Column(db.String(120), unique=False, nullable=False)
     full_name = db.Column(db.String(120), unique=False, nullable=False)
+    img_url = db.Column(db.String(120))
     moods=db.relationship("Mood", backref="human_talent")
     team_id=db.Column(db.Integer,db.ForeignKey("team.id"))
 
@@ -23,19 +25,21 @@ class HumanTalent (db.Model):
             f"{password}{self.salt}"
         )
 
-    def __init__(self, email, password, full_name, team_id):
+    def __init__(self, email, password, full_name, team_id, img_url):
         self.email = email
         self.salt = b64encode(os.urandom(4)).decode("utf-8")
         self.set_password(password)
         self.full_name = full_name
+        self.img_url = img_url
         self.team_id= team_id
 
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
-            "full_name":self.full_name,
-            "team_id":self.team_id
+            "full_name": self.full_name,
+            "img_url": self.img_url,
+            "team_id": self.team_id
         }
        
 class HRManager(db.Model):
@@ -76,7 +80,7 @@ class Company(db.Model):
     image=db.Column(db.String(120), nullable=True)
     country=db.Column(db.String(120),unique=False)
     city=db.Column(db.String(120),unique=False)
-    identifier=db.Column(db.String(120),unique=False)
+    identifier=db.Column(db.String(120),unique=True)
     teams=db.relationship("Team", backref="company")
     managers=db.relationship("HRManager", backref="company")
 
@@ -119,15 +123,32 @@ class Team(db.Model):
 
 class Mood(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date_published = db.Column(db.Integer)
+    date_published = db.Column(db.DateTime(timezone=True))
     face_value = db.Column(db.Integer)
-    comment = db.Column(db.String(120), unique=False, nullable=False)
+    comment = db.Column(db.String(300), unique=False, nullable=False)
     human_talent_id=db.Column(db.Integer,db.ForeignKey("human_talent.id"))
+
+    def __init__(self, face_value, comment, human_talent_id):
+        self.date_published = datetime.datetime.now(datetime.timezone.utc)
+        self.face_value = face_value
+        self.comment = comment
+        self.human_talent_id = human_talent_id
+    
+    # crear metodo 
+
+    def get_date(self):
+        return self.date_published.strftime(
+            "%x"
+        )
+            
+        
+    
 
     def serialize(self):
         return{
             "id" : self.id,
-            "date_published" : self.date_published,
+            "date_published" : self.get_date(),
             "face_value" : self.face_value,
             "comment" : self.comment,
+            "human_talent_id": self.human_talent_id
         }

@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: e3fb5e51561e
+Revision ID: d93349eb0e98
 Revises: 
-Create Date: 2021-02-17 17:58:46.992962
+Create Date: 2021-02-22 19:37:03.646136
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e3fb5e51561e'
+revision = 'd93349eb0e98'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,7 +25,8 @@ def upgrade():
     sa.Column('country', sa.String(length=120), nullable=True),
     sa.Column('city', sa.String(length=120), nullable=True),
     sa.Column('identifier', sa.String(length=120), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('identifier')
     )
     op.create_table('hr_manager',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -54,6 +55,7 @@ def upgrade():
     sa.Column('salt', sa.String(length=120), nullable=False),
     sa.Column('hashed_password', sa.String(length=120), nullable=False),
     sa.Column('full_name', sa.String(length=120), nullable=False),
+    sa.Column('img_url', sa.String(length=120), nullable=True),
     sa.Column('team_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['team_id'], ['team.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -61,9 +63,9 @@ def upgrade():
     )
     op.create_table('mood',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('date_published', sa.Integer(), nullable=True),
+    sa.Column('date_published', sa.DateTime(timezone=True), nullable=True),
     sa.Column('face_value', sa.Integer(), nullable=True),
-    sa.Column('comment', sa.String(length=120), nullable=False),
+    sa.Column('comment', sa.String(length=300), nullable=False),
     sa.Column('human_talent_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['human_talent_id'], ['human_talent.id'], ),
     sa.PrimaryKeyConstraint('id')
