@@ -123,9 +123,9 @@ class Team(db.Model):
 
 class Mood(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date_published = db.Column(db.DateTime(timezone=True))
-    face_value = db.Column(db.Integer)
-    comment = db.Column(db.String(300), unique=False, nullable=False)
+    date_published = db.Column(db.DateTime(timezone=True), nullable=False)
+    face_value = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.String(300), unique=False, nullable=True)
     human_talent_id=db.Column(db.Integer,db.ForeignKey("human_talent.id"))
 
     def __init__(self, face_value, comment, human_talent_id):
@@ -134,16 +134,9 @@ class Mood(db.Model):
         self.comment = comment
         self.human_talent_id = human_talent_id
     
-    # crear metodo 
-
     def get_date(self):
-        return self.date_published.strftime(
-            "%x"
-        )
-            
+        return self.date_published.strftime("%x")         
         
-    
-
     def serialize(self):
         return{
             "id" : self.id,

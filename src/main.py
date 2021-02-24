@@ -278,7 +278,7 @@ def handle_human_mood():
         if "face_value" not in data:
             return jsonify({"msg": "Missing your mood parameter"}), 400
     
-        new_mood = Mood(face_value=data['face_value'], comment=data['comment'],human_talent_id=human_t.id) 
+        new_mood = Mood(face_value=data['face_value'], comment=data['comment'], human_talent_id=human_t.id) 
         db.session.add(new_mood) 
         try:
             db.session.commit()
@@ -298,6 +298,58 @@ def handle_all_moods():
         response_body.append(mood.serialize())
     return jsonify(response_body), 200
 
+@app.route('/mood/<int:id>', methods=['DELETE'])
+def delete_mood_autless(id): 
+    """ elimina un talento humano por su ID"""
+    
+    db.session.delete(Mood.query.get(id) )
+    db.session.commit() 
+    return '', 204
+
+@app.route("/dashboardpie/<int:id>")
+def handle_dashboard_pie(id):
+
+    face_values = db.session.query(Mood.face_value).join(HumanTalent). \
+       filter(HumanTalent.team_id == id).all()
+
+    response_values = []
+
+    face_value_angry = []
+    face_value_sad = []
+    face_value_neutral = []
+    face_value_happy = []
+    face_value_awesome = []
+
+
+    for face_value in face_values:
+
+        if face_value == 1:
+            face_value_angry = face_value_angry + 1
+            face_value_angry.append(face_value)
+            response_values.append(face_value_angry.serialize())
+        if face_value == 2:
+            face_value_sad = face_value_sad + 1
+            face_value_sad.append(face_value)
+            response_values.append(face_value_sad.serialize())
+        if face_value == 3:
+            face_value_neutral = face_value_neutral + 1
+            face_value_neutral.append(face_value)
+            response_values.append(face_value_neutral.serialize())
+        if face_value == 4:
+            face_value_happy = face_value_happy + 1
+            face_value_happy.append(face_value)
+            response_values.append(face_value_happy.serialize())
+        if face_value == 5:
+            face_value_awesome = face_value_awesome + 1
+            face_value_awesome.append(face_value)
+            response_values.append(face_value_awesome.serialize())
+        return jsonify(response_values), 200
+
+# @app.route("/dashboardline")
+# def handle_dashboard_line():
+#     all_moods_month = db.session.query(Mood.face_value, Mood.date_published).join(HumanTalent). \
+       #filter(HumanTalent.team_id == id).all()
+    
 
 # no ha sido utilizado
 # @app.route("/identity")

@@ -21,7 +21,7 @@ flask-admin = "*"
 flask-jwt-extended = "==3.25.1"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
 
 [scripts]
 start="flask run -p 5000 -h 0.0.0.0"
