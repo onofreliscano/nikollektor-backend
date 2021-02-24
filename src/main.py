@@ -174,7 +174,7 @@ def handle_create():
 
 
 # endpoints para consultar y crear un usuario de la tabla HumanTalent
-@app.route('/human_talent', methods=['POST'])
+@app.route('/human-talent', methods=['POST'])
 def handle_new_talent():
     """Registra un HumanTalent"""
 
@@ -182,11 +182,13 @@ def handle_new_talent():
 
     new_talent = HumanTalent(email=data["email"], password=data["password"], full_name=data["full_name"], team_id=data["team_id"],img_url=data["img_url"])
     db.session.add(new_talent)
+    print("got here")
+    print(new_talent.team_id)
     db.session.commit()
     if new_talent:
         return new_talent.serialize(),201
 
-@app.route('/human_talent')
+@app.route('/human-talent')
 def handle_all_human_talent():
     """Devuelve la lista de talento humano"""
     humans_talent = HumanTalent.query.all()
@@ -195,7 +197,7 @@ def handle_all_human_talent():
         response_body.append(human.serialize())
     return jsonify(response_body), 200
 
-@app.route("/human_talent/<int:id>")
+@app.route("/human-talent/<int:id>")
 def handle_human_talent_single(id):
     """ buscar y regresar un talento humano"""
     human_talent = HumanTalent.query.get(id)
@@ -206,7 +208,7 @@ def handle_human_talent_single(id):
             "result": "user not found"
         }), 404
 
-@app.route('/human_talent/<int:id>', methods=['DELETE'])
+@app.route('/human-talent/<int:id>', methods=['DELETE'])
 def delete_human_talent(id): 
     """ elimina un talento humano por su ID"""
     hrmanager_email = get_jwt_identity()
@@ -309,41 +311,58 @@ def delete_mood_autless(id):
 @app.route("/dashboardpie/<int:id>")
 def handle_dashboard_pie(id):
 
-    face_values = db.session.query(Mood.face_value).join(HumanTalent). \
+    face_tuples = db.session.query(Mood.face_value, HumanTalent.full_name).join(HumanTalent). \
        filter(HumanTalent.team_id == id).all()
+    print(face_tuples)
+    face_values = []
+    for face_tuple in face_tuples:
+        face_values.append(face_tuple[0])
+    
+    data = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0
+    }
+    for value in face_values:
+        data[value] += 1
 
-    response_values = []
-
-    face_value_angry = []
-    face_value_sad = []
-    face_value_neutral = []
-    face_value_happy = []
-    face_value_awesome = []
+    return jsonify(data), 200
 
 
-    for face_value in face_values:
+    # response_values = []
 
-        if face_value == 1:
-            face_value_angry = face_value_angry + 1
-            face_value_angry.append(face_value)
-            response_values.append(face_value_angry.serialize())
-        if face_value == 2:
-            face_value_sad = face_value_sad + 1
-            face_value_sad.append(face_value)
-            response_values.append(face_value_sad.serialize())
-        if face_value == 3:
-            face_value_neutral = face_value_neutral + 1
-            face_value_neutral.append(face_value)
-            response_values.append(face_value_neutral.serialize())
-        if face_value == 4:
-            face_value_happy = face_value_happy + 1
-            face_value_happy.append(face_value)
-            response_values.append(face_value_happy.serialize())
-        if face_value == 5:
-            face_value_awesome = face_value_awesome + 1
-            face_value_awesome.append(face_value)
-            response_values.append(face_value_awesome.serialize())
-        return jsonify(response_values), 200
+    # face_value_angry = []
+    # face_value_sad = []
+    # face_value_neutral = []
+    # face_value_happy = []
+    # face_value_awesome = []
+
+
+    # for face_value in face_values:
+
+    #     if face_value == 1:
+    #         face_value_angry = face_value_angry + 1
+    #         face_value_angry.append(face_value)
+    #         response_values.append(face_value_angry.serialize())
+    #     if face_value == 2:
+    #         face_value_sad = face_value_sad + 1
+    #         face_value_sad.append(face_value)
+    #         response_values.append(face_value_sad.serialize())
+    #     if face_value == 3:
+    #         face_value_neutral = face_value_neutral + 1
+    #         face_value_neutral.append(face_value)
+    #         response_values.append(face_value_neutral.serialize())
+    #     if face_value == 4:
+    #         face_value_happy = face_value_happy + 1
+    #         face_value_happy.append(face_value)
+    #         response_values.append(face_value_happy.serialize())
+    #     if face_value == 5:
+    #         face_value_awesome = face_value_awesome + 1
+    #         face_value_awesome.append(face_value)
+    #         response_values.append(face_value_awesome.serialize())
+    #     return jsonify(response_values), 200
 
 # @app.route("/dashboardline")
 # def handle_dashboard_line():
