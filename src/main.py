@@ -30,12 +30,9 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-<<<<<<< HEAD
 """
 ENPOINTS: Company
 """
-=======
->>>>>>> 5294cf5fd87c25155b0776def66374716241fe57
 
 # para poder ingresar a la app se debe registrar primero la compañía 
 @app.route('/signup_company', methods=['POST'])
@@ -58,56 +55,7 @@ def handle_signup_company():
     if new_company:
         return new_company.serialize(),201
 
-<<<<<<< HEAD
-@app.route('/company', methods=['GET'])
-@jwt_required()
-def handle_all_company():
-    user_email = get_jwt_identity()
-    hr_manager = HRManager.query.filter_by(email=user_email).one_or_none()
-    if hr_manager is None:
-        return 403
-        return jsonify(hr_manager.company_id.serialize()), 200
-
-@app.route('/company/new_company', methods=['POST'])
-def handle_new_company():
-    data = request.get_json()
-    if data is None:
-        raise APIException("onofre's msg: specify the request body as a json object", status_code=400)
-    if 'name' not in data:
-        raise APIException("onofre's msg: specify an email", status_code=400)
-    if 'image' not in data:
-        raise APIException("onofre's msg: upload an image", status_code=400)
-    if 'country' not in data:
-        raise APIException("onofre's msg: specify a country", status_code=400)
-    if 'city' not in data:
-        raise APIException("onofre's msg: specify a city", status_code=400)
-    if 'identifier' not in data:
-        raise APIException("onofre's msg: specify an identifier (RIF, CODE)", status_code=400)
-    new_company = Company(name=data['name'], image=['image'], country=['country'], city=['city'], identifier=['identifier'])
-    db.session.add(new_company)
-    db.session.commit()
-    if new_company:
-        return new_company.serialize(),201
-
-@app.route('/company/update/<int:id>', methods=['PATCH']) #PUT
-def handle_company_update(id):
-    data = request.get_json()
-    update = Company.query.get(id)
-    update.name = data['name']
-    update.image = data['image']
-    update.country = data['country']
-    update.city = data['city']
-    update.identifier = data['identifier']
-    db.session.commit()
-    return '', 204
-
-"""
-ENPOINTS: HRManager
-"""
-
-=======
 # seguidamente, se debe registrar el HR Manager, quien requiere el id de la compañía
->>>>>>> 5294cf5fd87c25155b0776def66374716241fe57
 @app.route('/signup_manager', methods=['POST'])
 def handle_signup_manager():
     """registra un HR manager"""
@@ -127,7 +75,6 @@ def handle_signup_manager():
         return new_hrmanager.serialize(),201
 
 
-<<<<<<< HEAD
 @app.route('/HRManager/update/<int:id>', methods=['PATCH']) #PUT
 def handle_hrmanager_update(id):
     data = request.get_json()
@@ -145,9 +92,6 @@ def handle_hrmanager_update(id):
 ENPOINTS: LOGIN
 """      
 
-=======
-# inicio de sesión para ambos tipos de usuarios
->>>>>>> 5294cf5fd87c25155b0776def66374716241fe57
 @app.route("/login", methods=["POST"])
 def handle_login():
     """ verifica el password de human talent o HR manager con email = data['email'] y genera un token si lo consigue"""
@@ -176,14 +120,6 @@ def handle_login():
         return jsonify({"msg": "Bad credentials"}), 401
 
 
-<<<<<<< HEAD
-"""
-ENPOINTS: Team
-"""
-
-
-@app.route('/HRManager/teams')
-=======
 # el HR Manager puede hacer GET de la tabla Company.
 @app.route('/company', methods=['GET'])
 @jwt_required
@@ -202,7 +138,6 @@ def handle_all_company():
 # endpoints para tabla Team
 @app.route('/teams')
 @jwt_required
->>>>>>> 5294cf5fd87c25155b0776def66374716241fe57
 def handle_all_team():
     """Devuelve la lista de Team"""
     user = get_jwt_identity()
@@ -249,30 +184,9 @@ def handle_create():
     if new_team :
         return new_team.serialize(),201
 
-<<<<<<< HEAD
-@app.route('/HRManager/team/update/<int:id>', methods=['PATCH']) #PUT
-def handle_team_update(id):
-    data = request.get_json()
-    update = Team.query.get(id)
-    update.name = data['name']
-    update.description = data['description']
-    update.company_id = data['company_id']
-    
-    db.session.commit()
-    return '', 204
-
-
-"""
-ENPOINTS: HumanTalent
-"""
-
-
-@app.route('/HRManager/new_talent', methods=['POST'])
-=======
 
 # endpoints para consultar y crear un usuario de la tabla HumanTalent
 @app.route('/human-talent', methods=['POST'])
->>>>>>> 5294cf5fd87c25155b0776def66374716241fe57
 def handle_new_talent():
     """Registra un HumanTalent"""
 
