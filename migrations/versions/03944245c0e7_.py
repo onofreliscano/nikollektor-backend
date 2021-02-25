@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 87f5497b3f71
+Revision ID: 03944245c0e7
 Revises: 
-Create Date: 2021-02-16 23:54:25.453379
+Create Date: 2021-02-17 18:47:50.995560
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '87f5497b3f71'
+revision = '03944245c0e7'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,8 +31,8 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.Column('full_name', sa.String(length=120), nullable=False),
-    sa.Column('hashed_password', sa.String(length=120), nullable=False),
     sa.Column('salt', sa.String(length=120), nullable=True),
+    sa.Column('hashed_password', sa.String(length=120), nullable=False),
     sa.Column('company_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['company_id'], ['company.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -51,9 +51,9 @@ def upgrade():
     op.create_table('human_talent',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
+    sa.Column('salt', sa.String(length=120), nullable=False),
     sa.Column('hashed_password', sa.String(length=120), nullable=False),
     sa.Column('full_name', sa.String(length=120), nullable=False),
-    sa.Column('salt', sa.String(length=120), nullable=False),
     sa.Column('team_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['team_id'], ['team.id'], ),
     sa.PrimaryKeyConstraint('id'),

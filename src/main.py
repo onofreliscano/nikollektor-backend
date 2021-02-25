@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify, url_for, redirect
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
@@ -29,16 +29,14 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-# AL 16 de FEB
-# MODIFICACION PARA CLASE COMPANY
-# INCLUSION DE ENDPOINTS:
+"""
+ENPOINTS: Company
+"""
 
 @app.route('/signup_company', methods=['POST'])
 def handle_signup_company():
     """ Registra una compañía, desde la que se podrá crear al HR manager"""
-    
     data = request.get_json()
-
     if data is None:
         raise APIException("You need to specify the request body as a json object", status_code=400)
     if 'name' not in data:
@@ -49,7 +47,6 @@ def handle_signup_company():
         raise APIException('You need to specify the country', status_code=400)
     if 'identifier' not in data:
         raise APIException('You need to specify the phone', status_code=400)
-    
     new_company = Company(name=data['name'], image=data['image'], country=data['country'], city=data['city'], identifier=data['identifier'])
     db.session.add(new_company)
     db.session.commit()
@@ -57,25 +54,55 @@ def handle_signup_company():
         return new_company.serialize(),201
 
 @app.route('/company', methods=['GET'])
-@jwt_required
+@jwt_required()
 def handle_all_company():
-   
     user_email = get_jwt_identity()
     hr_manager = HRManager.query.filter_by(email=user_email).one_or_none()
-
     if hr_manager is None:
         return 403
-        
-    return jsonify(hr_manager.company.serialize()), 200
+        return jsonify(hr_manager.company_id.serialize()), 200
 
-# FIN DE ENDPOINTS CLASE COMPANY
+@app.route('/company/new_company', methods=['POST'])
+def handle_new_company():
+    data = request.get_json()
+    if data is None:
+        raise APIException("onofre's msg: specify the request body as a json object", status_code=400)
+    if 'name' not in data:
+        raise APIException("onofre's msg: specify an email", status_code=400)
+    if 'image' not in data:
+        raise APIException("onofre's msg: upload an image", status_code=400)
+    if 'country' not in data:
+        raise APIException("onofre's msg: specify a country", status_code=400)
+    if 'city' not in data:
+        raise APIException("onofre's msg: specify a city", status_code=400)
+    if 'identifier' not in data:
+        raise APIException("onofre's msg: specify an identifier (RIF, CODE)", status_code=400)
+    new_company = Company(name=data['name'], image=['image'], country=['country'], city=['city'], identifier=['identifier'])
+    db.session.add(new_company)
+    db.session.commit()
+    if new_company:
+        return new_company.serialize(),201
+
+@app.route('/company/update/<int:id>', methods=['PATCH']) #PUT
+def handle_company_update(id):
+    data = request.get_json()
+    update = Company.query.get(id)
+    update.name = data['name']
+    update.image = data['image']
+    update.country = data['country']
+    update.city = data['city']
+    update.identifier = data['identifier']
+    db.session.commit()
+    return '', 204
+
+"""
+ENPOINTS: HRManager
+"""
 
 @app.route('/signup_manager', methods=['POST'])
 def handle_signup_manager():
     """registra un HR manager"""
-
     data = request.get_json()
-
     if data is None:
         raise APIException("You need to specify the request body as a json object", status_code=400)
     if 'email' not in data:
@@ -84,33 +111,44 @@ def handle_signup_manager():
         raise APIException('You need to specify the full_name', status_code=400)
     if "password" not in data:
         raise APIException('You need to specify the password', status_code=400)
-
     new_hrmanager = HRManager(email=data['email'], full_name=data['full_name'], password=data["password"], company_id=data['company_id'])
     db.session.add(new_hrmanager)
     db.session.commit()
     if new_hrmanager:
         return new_hrmanager.serialize(),201
 
+
+@app.route('/HRManager/update/<int:id>', methods=['PATCH']) #PUT
+def handle_hrmanager_update(id):
+    data = request.get_json()
+    update = HRManager.query.get(id)
+    update.email = data['email']
+    update.full_name = data['full_name']
+    update.company_id = data['company_id']
+    
+    db.session.commit()
+    return '', 204
+
+
+
+"""
+ENPOINTS: LOGIN
+"""      
+
 @app.route("/login", methods=["POST"])
 def handle_login():
     """ verifica el password de human talent o HR manager con email = data['email'] y genera un token si lo consigue"""
-    
     data = request.get_json()
-
     if not data:
-        return jsonify({"msg": "Missing JSON in request"}), 400
-    
+        return jsonify({"msg": "Missing JSON in request"}), 400 
     email = data.get('email', None)
     password = data.get('password', None)
-
     if not email:
         return jsonify({"msg": "Missing email parameter"}), 400
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
-
     user = HumanTalent.query.filter_by(email=email).one_or_none()
-    admin = HRManager.query.filter_by(email=email).one_or_none()
-    
+    admin = HRManager.query.filter_by(email=email).one_or_none() 
     if user:
         if user.check_password(password):
             response = {'jwt': create_access_token(identity=user.email), 'is_manager':False} #aquí crea el token del login
@@ -123,6 +161,12 @@ def handle_login():
         return jsonify({"msg": "User does not exist"}), 404
     else:
         return jsonify({"msg": "Bad credentials"}), 401
+
+
+"""
+ENPOINTS: Team
+"""
+
 
 @app.route('/HRManager/teams')
 def handle_all_team():
@@ -149,6 +193,23 @@ def handle_create():
     db.session.commit()
     if new_team :
         return new_team.serialize(),201
+
+@app.route('/HRManager/team/update/<int:id>', methods=['PATCH']) #PUT
+def handle_team_update(id):
+    data = request.get_json()
+    update = Team.query.get(id)
+    update.name = data['name']
+    update.description = data['description']
+    update.company_id = data['company_id']
+    
+    db.session.commit()
+    return '', 204
+
+
+"""
+ENPOINTS: HumanTalent
+"""
+
 
 @app.route('/HRManager/new_talent', methods=['POST'])
 def handle_new_talent():
@@ -214,6 +275,20 @@ def handle_mood():
     except Exception as error:
         print(error.args) 
         return jsonify("NOT OK"), 500
+
+@app.route('/HRManager/team/update/<int:id>', methods=['PATCH']) #PUT
+def handle_team_update(id):
+    data = request.get_json()
+    update = Team.query.get(id)
+    update.name = data['name']
+    update.description = data['description']
+    update.company_id = data['company_id']
+    db.session.commit()
+    return '', 204
+
+
+
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
