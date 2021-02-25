@@ -130,9 +130,14 @@ def handle_all_company():
 
 # endpoints para tabla Team
 @app.route('/teams')
+@jwt_required
 def handle_all_team():
     """Devuelve la lista de Team"""
-    teams = Team.query.all()
+    user = get_jwt_identity()
+    human_r = HRManager.query.filter_by(email=user).one_or_none()
+    if human_r is None:
+        return "", 403
+    teams = Team.query.filter_by(company_id=human_r.company_id).all()
     response_body = []
     for team in teams:
         response_body.append(team.serialize())
@@ -151,7 +156,7 @@ def handle_create():
     """Crea Team, necesario para poder crear un usuario human talent"""
 
     hrmanager_email = get_jwt_identity()
-    human_t = HRManager.query.filter_by(email=hrmanager_email).one_or_none()
+    human_t = HRManager.query.filter_by(email=hrmanager_email).one_or_none() #revisar
 
     data = request.get_json()
 
@@ -308,10 +313,10 @@ def delete_mood_autless(id):
     db.session.commit() 
     return '', 204
 
-@app.route("/dashboardpie/<int:id>")
+@app.route("/dashboards/<int:id>")
 def handle_dashboard_pie(id):
 
-    face_tuples = db.session.query(Mood.face_value, HumanTalent.full_name).join(HumanTalent). \
+    face_tuples = db.session.query(Mood.face_value, Mood.date_published).join(HumanTalent). \
        filter(HumanTalent.team_id == id).all()
     print(face_tuples)
     face_values = []
@@ -330,44 +335,22 @@ def handle_dashboard_pie(id):
 
     return jsonify(data), 200
 
+@app.route("/dashboardline/<int:id>")
+def handle_dashboard_line(id):
+    tuple_moods_month = db.session.query( Mood.date_published, Mood.face_value).join(HumanTalent). \
+       filter(HumanTalent.team_id == id).all()
+    print(tuple_moods_month)
+    data = {}
+    for date_published, face_value in tuple_moods_month:
+        if date_published.month not in data:
+            data[date_published.month] = {}
+        if face_value not in data[date_published.month]:
+            data[date_published.month][face_value] = 0
+        data[date_published.month][face_value] += 1
+    print(data)
+    return jsonify(data), 200
 
-    # response_values = []
-
-    # face_value_angry = []
-    # face_value_sad = []
-    # face_value_neutral = []
-    # face_value_happy = []
-    # face_value_awesome = []
-
-
-    # for face_value in face_values:
-
-    #     if face_value == 1:
-    #         face_value_angry = face_value_angry + 1
-    #         face_value_angry.append(face_value)
-    #         response_values.append(face_value_angry.serialize())
-    #     if face_value == 2:
-    #         face_value_sad = face_value_sad + 1
-    #         face_value_sad.append(face_value)
-    #         response_values.append(face_value_sad.serialize())
-    #     if face_value == 3:
-    #         face_value_neutral = face_value_neutral + 1
-    #         face_value_neutral.append(face_value)
-    #         response_values.append(face_value_neutral.serialize())
-    #     if face_value == 4:
-    #         face_value_happy = face_value_happy + 1
-    #         face_value_happy.append(face_value)
-    #         response_values.append(face_value_happy.serialize())
-    #     if face_value == 5:
-    #         face_value_awesome = face_value_awesome + 1
-    #         face_value_awesome.append(face_value)
-    #         response_values.append(face_value_awesome.serialize())
-    #     return jsonify(response_values), 200
-
-# @app.route("/dashboardline")
-# def handle_dashboard_line():
-#     all_moods_month = db.session.query(Mood.face_value, Mood.date_published).join(HumanTalent). \
-       #filter(HumanTalent.team_id == id).all()
+   
     
 
 # no ha sido utilizado
